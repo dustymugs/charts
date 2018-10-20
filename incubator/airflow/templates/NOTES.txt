@@ -1,4 +1,6 @@
-Congratulations. You have just deployed Apache Airflow
+Congratulations. You have just installed {{ .Chart.Name | upper }}, released at name: {{ .Release.Name }}.
+
+You can connect to Airflow and Flower by running the following:
 
 URL to Airflow and Flower:
 {{- if .Values.ingress.enabled }}
@@ -8,9 +10,14 @@ URL to Airflow and Flower:
 
 {{- else if contains "NodePort" .Values.airflow.service.type }}
 
-   export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ template "airflow.fullname" . }})
-   export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-   echo http://$NODE_IP:$NODE_PORT/
+		export AIRFLOW_FLOWER_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].status.podIP}")
+		export AIRFLOW_FLOWER_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
+
+		export AIRFLOW_WEB_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].status.podIP}")
+		export AIRFLOW_WEB_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
+
+		echo Airflow Web: http://$AIRFLOW_WEB_IP:$WEB_PORT
+		echo Airflow Flower: http://$AIRFLOW_FLOWER_IP:$FLOWER_PORT
 
 {{- else if contains "LoadBalancer"  .Values.airflow.service.type }}
 
@@ -21,14 +28,9 @@ URL to Airflow and Flower:
 
 {{- else if contains "ClusterIP" .Values.airflow.service.type }}
 
-		export AIRFLOW_FLOWER_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].status.podIP}")
-		export AIRFLOW_FLOWER_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
-
-		export AIRFLOW_WEB_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].status.podIP}")
-		export AIRFLOW_WEB_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
-
-		echo http://$AIRFLOW_WEB_IP:$WEB_PORT
-		echo http://$AIRFLOW_FLOWER_IP:$FLOWER_PORT
+   export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "component={{ .Values.airflow.name }}" -o jsonpath="{.items[0].metadata.name}")
+   echo http://127.0.0.1:{{ .Values.airflow.externalPortHttp }}
+   kubectl port-forward --namespace {{ .Release.Namespace }} $POD_NAME {{ .Values.airflow.externalPortHttp }}:{{ .Values.airflow.internalPortHttp }}
 
 2. Open Airflow in your web browser
 {{- end }}
