@@ -21,14 +21,14 @@ URL to Airflow and Flower:
 
 {{- else if contains "ClusterIP" .Values.airflow.service.type }}
 
-		export FLOWER_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].status.podIP}")
-		export FLOWER_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
+		export AIRFLOW_FLOWER_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].status.podIP}")
+		export AIRFLOW_FLOWER_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-flower" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
 
-		export WEB_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].status.podIP}")
-		export WEB_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
+		export AIRFLOW_WEB_IP=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].status.podIP}")
+		export AIRFLOW_WEB_PORT=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app={{ template "airflow.name" . }}-web" -o jsonpath="{.items[0].spec.containers[0].ports[0].containerPort}")
 
-		echo Airflow Web: http://$WEB_IP:$WEB_PORT
-		echo Airflow Flower: http://$FLOWER_IP:$FLOWER_PORT
+		echo http://$AIRFLOW_WEB_IP:$WEB_PORT
+		echo http://$AIRFLOW_FLOWER_IP:$FLOWER_PORT
 
 2. Open Airflow in your web browser
 {{- end }}
